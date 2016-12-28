@@ -56,3 +56,6 @@ def OLS(Z=Z,y=y):
     print (res.resid)
     return res
 res= OLS()
+
+
+print "google"
