@@ -194,33 +194,7 @@ def writexcel(data):
              sheetA.write(p,q,value)
 
     myexcel.save(r'E:\Desktop\bb.xls')
-'''
-def getrate(dat):
-    data=dat
-    avglist= getcase_calcuAVG(data=data)
-    # print "avglist",avglist
-    aa=list(avglist.fillna(value=0))
-    cc=['{:.2f}'.format(i) for i in aa]
-    print 'aa1',cc
-    # 补充拟合值
-    aa=get_nearAvg(aa)
-    s = AES(aa, beta=0.3)
-    ss = AES(s, beta=0.1)
-    cc=['{:.2f}'.format(i) for i in aa]
-    print "aa2" ,cc
-    ss=['{:.2f}'.format(i) for i in ss]
-    print 'ss2',ss
-    # draw()
-    if len(ss)<=1:
-        result= None
-    elif float(ss[-1])==0.0 or float(ss[-2])==0.0:
-        result=None
-    else:
-        result= 1.0*float(ss[-1])/float(ss[-2])
-    print "小区该物业类型增长率",result
-    return result
 
-'''
 #导入数据
 def start_proc():
     '''
@@ -236,78 +210,26 @@ def start_proc():
     # 板块、物业类型循环
     by_block_dtype= df.groupby(by= ['block','dtype'])
     for block_dtyep, datablock in by_block_dtype:
-        print "###########################################################################################"
         for block in block_dtyep:
             print block
-        print "###########################################################################################"
         # 小区循环
         by_name= df.groupby(by=['name'])
         blockRate=pd.Series()
         for name,df in by_name:
-            print "                        "
+            print "                                     "
             print name
             df_time= pd.DataFrame(df,columns=['t','price'])
             # 排序
             sorted_data=df_time.sort_values(by='t')
             sort_ix_data=sorted_data.reset_index(drop=True)
-            print "number of sample", sort_ix_data.shape[0]
-            if False:
-                pass
-                # sort_ix_data.shape[0]==1
-                # result=None
-                # print "case not enough"
-            else:
-                # 补充案例，计算拟合值
-                avglist= getcase_calcuAVG(data=sort_ix_data)
-                # print "avglist",avglist
-                aa=list(avglist.fillna(value=0))
-                cc=['{:.2f}'.format(i) for i in aa]
-                # test
-                dd= [48646.09302,48528.84615,49772.57895,41667,49312,43400,43400,43400,25340,25340,25340,25340,23006.03125,30241.53333,30054.45455,22566.75,22566.75,22566.75,22566.75,22566.75,22566.75,22566.75,22566.75,22566.75]
-                kk= dd[::-1]
-                kk=['{:.2f}'.format(i) for i in kk]
-                print 'tddddddddd',kk
-                print '原始拟合值',cc
-                # 拟合值缺失， 补充拟合值
-                aa=get_nearAvg(aa)
-                # 二次平滑值计算
-                s = AES(aa, beta=0.3)
-                ss = AES(s, beta=0.1)
-                cc=['{:.2f}'.format(i) for i in aa]
-                print "补充拟合值" ,cc
-                ss=['{:.2f}'.format(i) for i in ss]
-                print '二次平滑值',ss
-                # draw()
-                if len(ss)<=1:
-                    result= None
-                elif float(ss[-1])==0.0 or float(ss[-2])==0.0:
-                    result=None
-                else:
-                    result= 1.0*float(ss[-1])/float(ss[-2])
+            avglist= getcase_calcuAVG(data=sort_ix_data)
+            # print "avglist",avglist
+            blockRate.set_value(name,avglist)
 
-                print name,block[0],block[1],"原始涨跌幅",result
-                # result= getrate(sort_ix_data)
-            if result<>None:
-                blockRate.set_value(name,result)
-                break
-            break
-
-
-        print "板块原始涨跌幅列表"
-        print blockRate
         avg_blockRate,min_block, max_block= zoneAVE(blockRate,windowwidth=0.1,step=0.01,rate=0.5)
         print '最小值和最大值',min_block, max_block
-
-        for name,value in enumerate(blockRate):
-            if value< min_block:
-                blockRate[name]=min_block
-            elif value>max_block:
-                blockRate[name]=max_block
-            else:
-                pass
-        print "最终涨跌幅"
-        print blockRate
-
+        print avg_blockRate
+        
     # print sort_ix_data
     def left_dfcol():
     # 对pandas 列进行字符串操作
