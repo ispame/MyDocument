@@ -7,55 +7,7 @@ from operator import itemgetter
 # import parawrap
 import calendar
 import datetime as dtm
-
 import xlwt
-
-#可以删掉
-def zoneAve1(data,b=1000,a=100):
-    '''
-    区间移动，剔除异常值，计算平均值
-    '''
-    orderlist= np.sort(data)
-    count = []
-    dif= orderlist[-1]- orderlist[0]
-    for n in range(1,dif/100):
-
-        for i,value in enumerate(orderlist):
-            basedata= orderlist[0]+ n*a
-            topdata= orderlist[0]+n*a+b
-            if basedata <=i and  i <= topdata:
-                number=number+1
-        # if number!=0.0:
-        count.append(number)
-    # 拿到最远以个最大值的区间位置
-    recount = count[::-1]
-    n=len(recount)- np.argmax(recount)-1
-    i=0
-    while (count[n+i]>= max(count)/2) :
-        i= i+1
-        if len(count)>=n+i:
-            break
-    j=0
-    while (count[n-j]>= max(count)/2):
-        j= j+1
-        if (n-j-1)<=0:
-            break
-    mylist=[]
-    for m in orderlist:
-        mmax= orderlist[0]+(n+i-1)*a+b
-        mmin= orderlist[0]+ (n-j+1)*a
-        if orderlist[0]+(n+i-1)*a+b>=m and  m>=orderlist[0]+ (n-j+1)*a:
-            mylist.append(m)
-    return np.average(mylist)
-
-
-
-
-
-a=[23715.00,23715.00,22500.00,22500.00,23334.00,22364.00,26286.00,29167.00,30000.00,22500.00,25410.00,22858.00,28000.00,30000.00,30556.00,23143.00,27587.00,25715.00,27500.00,28000.00,30685.00,32512.00,35850.00,22728.00,23685.00,30685.00,30882.00,34286.00,43479.00,23750.00,34723.00,22059.00,22223.00,22223.00,22369.00,25000.00,34723.00,24000.00,26487.00,27006.00,30858.00,34723.00,34723.00]
-
-
-
 
 def zoneAVE(mylist=a,windowwidth=1000,step =100,rate=0.5):
     '''
@@ -65,8 +17,6 @@ def zoneAVE(mylist=a,windowwidth=1000,step =100,rate=0.5):
     :param rate:
     :return:  avg,mmin,mmax
     '''
-
-
     orderlist= np.sort(mylist)
     numlist = []
     # print orderlist
@@ -77,27 +27,19 @@ def zoneAVE(mylist=a,windowwidth=1000,step =100,rate=0.5):
         avg=np.average(orderlist)
     else:
         maxrange= orderlist[-1]- orderlist[0]
-
-        # 判断样本密度集中，大于步长，至少可以进行一次移动。
         if int(maxrange/step)>=1:
-        # print orderlist
-        # n represent the number of move-window times
             for n in range(0,int(maxrange/step)):
                 down=orderlist[0]+ step*n
                 up= windowwidth+down
-                # print down,up,maxrange/step, orderlist[-1]
                 numofwindow=0
                 for i,value in enumerate(orderlist):
                     if value>=down and value <up:
                         numofwindow+=1
                 numlist.append(numofwindow)
-
             renumlist = numlist[::-1]
             # maxix 最大的最多数量的index
-
             maxvalue= max(renumlist)
             maxix=len(renumlist)- np.argmax(renumlist)-1
-
             i=0
             while (numlist[maxix+i]>=maxvalue*rate) :
                 i= i+1
@@ -114,7 +56,6 @@ def zoneAVE(mylist=a,windowwidth=1000,step =100,rate=0.5):
             for value in orderlist:
                 if value>=mmin and value<mmax:
                    qualifiedlist.append(value)
-            #  for test ()
             print numlist[maxix]
             print mmax,mmin,
             print "Testlist",qualifiedlist
@@ -125,94 +66,22 @@ def zoneAVE(mylist=a,windowwidth=1000,step =100,rate=0.5):
             mmin= min(orderlist)
             avg=np.average(orderlist)
     return avg,mmin,mmax
-# print zoneAVE()
-
-
-def AES(data, beta=0.1):
-
-    '''
-    自适应指数平滑
-    :rtype: object
-    '''
-    S = []
-    s = data[0]
-    E = 1
-    M = 1
-    for each in data:
-        y = each
-        e = y - s
-        E = beta * e + (1 - beta) * E
-        M = beta * abs( e ) + (1 - beta) * M
-        T = E / float(M)
-        a = abs(T)
-        s = a * y + (1 - a) * s
-        S.append(s)
-    return S
-
-'''
-def findcase(data,leastCaseNum=10,day=5,time=3):
-
-    if casenum<leastCaseNum:
-        push day
-        add.case
-'''
-
-
-def get_nearAvg(aa):
-    '''
-        #补充拟合值
-    '''
-    nonzeroix=pd.Series()
-    i=0
-    for ix,avg in enumerate(aa):
-        if avg<>0.0:
-            nonzeroix.set_value(i,value=ix)
-            i+=1
-    for index,avg in enumerate(aa):
-        if avg==0.0:
-            ixx=minstance(index,nonzeroix)
-            if ixx==None:
-                aa[index]=0
-            # print index, ixx
-            # print aa[ixx]
-            else:
-                aa[index] = aa[ixx]
-    return aa
-
-
-def draw(aa,ss):
-    plt.plot(aa)
-    plt.plot(ss)
-    # plt.plot(cc)
-    plt.show()
-
-
-def minstance(index,listIx):
-    '''
-    return 距离list index 最近的index(同等情况去向前一个月)
-    '''
-    minD= 10000000
-    minX=None
-    for ix in listIx:
-        dd= ix-index
-        if dd<0:
-            dd = -dd-0.5
-        if dd<minD:
-            minD=dd
-            minX = ix
-    return minX
-
-
 
 
 def last_day(i):
+    '''
+    #给任意datetime i, 半月最后一天判断
+    '''
      if i.day>15:
         _,days_in_months=calendar.monthrange(i.year,i.month)
         return dtm.datetime(i.year,i.month,days_in_months)
      elif i.day<=15:
         return dtm.datetime(i.year,i.month,15)
-
-
+def first_day(i)
+    if i.day>15:
+        return dtm.datetime(i.year,i.month,16)
+    elif i.day<=15:
+        return dtm.datetime(i.year,i.month,1)
 
 
 def dd(sameMonthTable,i,data,maxPushTimes,miniCaseNum,onePush):
@@ -323,7 +192,7 @@ def writexcel(data):
         print value
         for q in value:
              sheetA.write(p,q,value)
-    # sheetA.write(0,1,'中国人民有dddsaaaaaaaad力量'.decode('utf-8'))
+
     myexcel.save(r'E:\Desktop\bb.xls')
 '''
 def getrate(dat):
@@ -463,50 +332,4 @@ start_proc()
 
 
 
-
-
-#
-# def test():
-#     # dd= [48646.09302,48528.84615,49772.57895,41667,49312,43400,43400,43400,25340,25340,25340,25340,23006.03125,30241.53333,30054.45455,]
-#     # aa= dd[::-1]
-#
-#     # 原始拟合值
-#     # aa=['22566.75', '30054.45', '30229.00', '23006.03', '25340.00', '25340.00', '25340.00', '25340.00', '0.00', '43400.00', '43400.00', '49312.00', '416  67.00', '49772.58', '48646.09']
-#     # kk= ['22566.75','22566.75','22566.75','22566.75','22566.75','22566.75','22566.75','22566.75','22566.75', '30054.45', '30229.00', '23006.03', '25340.00', '25340.00', '25340.00', '25340.00', '25340.00', '43400.00', '43400.00', '49312.00', '41667.00', '49772.58', '48646.09']
-#     # aa=[]
-#     # for i in kk:
-#     #     print i
-#     #     aa.append(float(i))
-#     # print len(aa)
-#     #
-#     dd=['22566.75', '22566.75', '22566.75', '22566.75', '22566.75', '22566.75', '22566.75', '22566.75', '22566.75', '30054.45', '30241.53', '23006.03', '25340.00', '25340.00', '25340.00', '25340.00', '43400.00', '43400.00', '43400.00', '49312.00', '41667.00', '49772.58', '48528.85', '48646.09']
-#     aa=[]
-#     for i in dd:
-#         print i
-#
-#         aa.append(float(i))
-#     print len(dd)
-#     s = AES((aa), beta=0.3)
-#     ss = AES(s, beta=0.1)
-#     cc=['{:.2f}'.format(i) for i in aa]
-#
-#     print "补充拟合值" ,cc
-#
-#     ss=['{:.2f}'.format(i) for i in ss]
-#     print '二次平滑值',ss
-#     draw(cc,ss)
-#
-#
-#     s = AES(aa[3:], beta=0.3)
-#     ss = AES(s, beta=0.1)
-#     cc=['{:.2f}'.format(i) for i in aa]
-#
-#     print "补充拟合值" ,cc
-#
-#     ss=['{:.2f}'.format(i) for i in ss]
-#     print '二次平滑值',ss
-#     draw(cc,ss)
-#
-#     # print float(ss[-1])/float(ss[-3])
-# test()
 
